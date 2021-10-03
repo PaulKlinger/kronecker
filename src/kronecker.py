@@ -24,16 +24,34 @@ class Operation:
 
         return NotImplemented
 
-    def __eq__(self, other) -> Equation:
+    def __comparison_op(self, other, operator: np.ufunc) -> Equation:
         if isinstance(other, Operation):
-            return Equation(self, other, np.equal)
+            return Equation(self, other, operator)
         elif isinstance(other, Index):
-            return Equation(self, Operation(self.indices, lambda v: v[other]), np.equal)
+            return Equation(self, Operation(self.indices, lambda v: v[other]), operator)
         elif isinstance(other, Number):
-            return Equation(self, Operation(self.indices, lambda v: other), np.equal)
-
+            return Equation(self, Operation(self.indices, lambda v: other), operator)
+        
         return NotImplemented
 
+    def __eq__(self, other) -> Equation:
+        return self.__comparison_op(other, np.equal)
+    
+    def __neq__(self, other) -> Equation:
+        return self.__comparison_op(other, np.not_equal)
+    
+    def __gt__(self, other) -> Equation:
+        return self.__comparison_op(other, np.greater)
+    
+    def __ge__(self, other) -> Equation:
+        return self.__comparison_op(other, np.greater_equal)
+    
+    def __lt__(self, other) -> Equation:
+        return self.__comparison_op(other, np.less)
+    
+    def __le__(self, other) -> Equation:
+        return self.__comparison_op(other, np.less_equal)
+        
 
 def create_index_array(shape: Tuple[int,...], index_dim: int) -> np.ndarray:
     initial_shape = np.ones(len(shape), dtype=np.int32)
@@ -59,7 +77,7 @@ class Equation:
     def toarray(self):
         index_values = self._create_index_arrays()
         return self.operator(self.left(index_values), self.right(index_values))
-        
+
 
 class Index:
     def __init__(self, n: int):
@@ -77,19 +95,38 @@ class Index:
 
         return NotImplemented
 
-    def __eq__(self, other) -> Operation:
+    def __comparison_op(self, other, operator) -> Operation:
         if isinstance(other, Number):
             return Equation(
                 Operation(self.indices, lambda v: v[self]),
                 Operation(self.indices, lambda v: other),
-                ComparisonOperators.EQUALS)
+                operator)
         elif isinstance(other, Index):
             return Equation(
                 Operation(self.indices, lambda v: v[self]),
                 Operation(self.indices, lambda v: v[other]),
-                ComparisonOperators.EQUALS)
+                operator)
         
         return NotImplemented
+    
+    def __eq__(self, other) -> Equation:
+        return self.__comparison_op(other, np.equal)
+    
+    def __neq__(self, other) -> Equation:
+        return self.__comparison_op(other, np.not_equal)
+    
+    def __gt__(self, other) -> Equation:
+        return self.__comparison_op(other, np.greater)
+    
+    def __ge__(self, other) -> Equation:
+        return self.__comparison_op(other, np.greater_equal)
+    
+    def __lt__(self, other) -> Equation:
+        return self.__comparison_op(other, np.less)
+    
+    def __le__(self, other) -> Equation:
+        return self.__comparison_op(other, np.less_equal)
+
 
 IndexFun = Callable[[Dict[Index, np.ndarray]], np.ndarray]
 

@@ -33,3 +33,15 @@ def test_extract_row():
     res = (i == 1).toarray()
 
     np.testing.assert_array_equal(res, expected)
+
+
+def test_extract_block():
+    expected = np.array([
+        [0, 0, 0],
+        [1, 1, 1],
+        [1, 1, 1]
+    ])
+    i, j = kronecker.dims((3, 3))
+    res = (i >= 1).toarray()
+
+    np.testing.assert_array_equal(res, expected)
