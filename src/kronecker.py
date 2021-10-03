@@ -37,14 +37,32 @@ class Term(abc.ABC):
     def __le__(self, other) -> Equation:
         return self.__comparison_op(other, np.less_equal)
 
-    def __add__(self, other) -> Term:
+    def __binary_op(self, other, operator: np.ufunc) -> CompositeTerm:
         if isinstance(other, Number):
-            return CompositeTerm(self.indices, lambda v: self(v) + other)
+            return CompositeTerm(self.indices, lambda v: operator(self(v), other))
         elif isinstance(other, Term):
-            return CompositeTerm(self.indices, lambda v: self(v) + other(v))
+            return CompositeTerm(self.indices, lambda v: operator(self(v), other(v)))
 
         return NotImplemented
 
+    def __add__(self, other) -> CompositeTerm:
+        return self.__binary_op(other, np.add)
+
+    def __sub__(self, other) -> CompositeTerm:
+        return self.__binary_op(other, np.subtract)
+
+    def __mul__(self, other) -> CompositeTerm:
+        return self.__binary_op(other, np.multiply)
+    
+    def __pow__(self, other) -> CompositeTerm:
+        return self.__binary_op(other, np.power)
+
+    def __floordiv__(self, other) -> CompositeTerm:
+        return self.__binary_op(other, np.floor_divide)
+
+    def __truediv__(self, other) -> None:
+        raise NotImplementedError("True division is not available, use // for integer division.")
+        
 
 class Index(Term):
     def __init__(self, n: int):

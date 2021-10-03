@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import src.kronecker as kronecker
 
@@ -45,3 +46,43 @@ def test_extract_block():
     res = (i >= 1).toarray()
 
     np.testing.assert_array_equal(res, expected)
+
+
+def test_operations_1():
+    expected = np.array([
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0],
+        [1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0]
+    ])
+
+    i, j = kronecker.dims((5, 5))
+    res1 = (i * 4 // 5  - j >= 0).toarray()
+    res2 = (0 <= i * 4 // 5  - j).toarray()
+
+    np.testing.assert_array_equal(res1, expected)
+    np.testing.assert_array_equal(res2, expected)
+
+
+def test_pow():
+    expected = np.array([
+        [0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1]
+    ])
+
+    i, j = kronecker.dims((5, 5))
+    res = (i ** 2 > j).toarray()
+    for r in res:
+        print(r)
+
+    np.testing.assert_array_equal(res, expected)
+
+
+def test_pow():
+    i, j = kronecker.dims((5, 5))
+    with pytest.raises(NotImplementedError):
+        (i / 2 > j).toarray()
