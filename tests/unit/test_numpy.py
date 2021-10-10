@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.kronecker import create_index_array
+from kronecker.backends.numpy import create_index_array
 
 
 def test_create_index_array():

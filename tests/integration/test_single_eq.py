@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-import src.kronecker as kronecker
+import kronecker
 
 
 def test_diag():
