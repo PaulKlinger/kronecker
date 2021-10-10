@@ -82,7 +82,7 @@ def test_pow():
     np.testing.assert_array_equal(res, expected)
 
 
-def test_pow():
+def test_div():
     i, j = kronecker.dims((5, 5))
     with pytest.raises(NotImplementedError):
         (i / 2 > j).toarray()
