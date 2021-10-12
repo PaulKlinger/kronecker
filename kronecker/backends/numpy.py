@@ -39,7 +39,6 @@ def realise_term(
 class NumpyBackend(Backend):
     @staticmethod
     def realise(eq: Equation) -> np.ndarray:
-        print(eq.indices)
         index_values = create_index_arrays(eq.indices)
         return eq.operator(
             realise_term(eq.left, index_values),
