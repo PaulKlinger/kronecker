@@ -20,10 +20,12 @@ def create_index_arrays(indices: Sequence[Index]) -> Dict[Index, np.ndarray]:
 
     
 def realise_term(
-    term: Term,
+    term: Union[Term, Number],
     index_values: Dict[Index, np.ndarray]
     ) -> Union[np.ndarray, Number]:
-    if isinstance(term, NumberTerm):
+    if isinstance(term, Number):
+        return term
+    elif isinstance(term, NumberTerm):
         return term.value
     elif isinstance(term, Index):
         return index_values[term]
@@ -31,6 +33,7 @@ def realise_term(
         return term.operator(
             realise_term(term.left, index_values),
             realise_term(term.right, index_values))
+    raise ValueError(f"Numpy backend can't realise term {term}")
 
 
 class NumpyBackend(Backend):

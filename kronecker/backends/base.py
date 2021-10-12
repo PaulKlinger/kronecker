@@ -5,5 +5,5 @@ from kronecker.core import Equation
 
 class Backend(abc.ABC):
     @abc.abstractmethod
-    def realise(eq: Equation) -> Any:
+    def realise(self, eq: Equation) -> Any:
         pass
