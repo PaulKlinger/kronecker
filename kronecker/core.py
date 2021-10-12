@@ -1,6 +1,6 @@
 from __future__ import annotations
 import abc
-from numbers import Number
+from numbers import Real
 from typing import Sequence, Tuple, Dict, Any, Union, Optional, List
 
 import numpy as np
@@ -17,8 +17,8 @@ class Term(abc.ABC):
     def __comparison_op(self, other: Any, operator: np.ufunc) -> Equation:
         if isinstance(other, Term):
             return Equation(self, other, operator)
-        elif isinstance(other, Number):
-            return Equation(self, NumberTerm(other, self.indices), operator)
+        elif isinstance(other, Real):
+            return Equation(self, RealTerm(other, self.indices), operator)
         
         return NotImplemented
 
@@ -43,8 +43,8 @@ class Term(abc.ABC):
         return self.__comparison_op(other, np.less_equal)
 
     def __binary_op(self, other: Any, operator: np.ufunc) -> CompositeTerm:
-        if isinstance(other, Number):
-            return CompositeTerm(self.indices, self, NumberTerm(other, self.indices), operator)
+        if isinstance(other, Real):
+            return CompositeTerm(self.indices, self, RealTerm(other, self.indices), operator)
         elif isinstance(other, Term):
             return CompositeTerm(self.indices, self, other, operator)
 
@@ -69,8 +69,8 @@ class Term(abc.ABC):
         raise NotImplementedError("True division is not available, use // for integer division.")
 
 
-class NumberTerm(Term):
-    def __init__(self, value: Number, indices: Sequence[Index]):
+class RealTerm(Term):
+    def __init__(self, value: Real, indices: Sequence[Index]):
         super().__init__(indices)
         self.value = value
 
@@ -86,7 +86,7 @@ class Index(Term):
 
 
 class CompositeTerm(Term):
-    def __init__(self, indices: Sequence[Index], left: Union[Number, Term], right: Union[Number, Term], operator: np.ufunc):
+    def __init__(self, indices: Sequence[Index], left: Union[Real, Term], right: Union[Real, Term], operator: np.ufunc):
         super().__init__(indices)
         self.left = left
         self.right = right
@@ -104,3 +104,4 @@ class Equation:
         self.left = left
         self.right = right
         self.operator = operator
+        self.shape = left.shape

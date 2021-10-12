@@ -1,7 +1,7 @@
 from typing import Tuple, Sequence, Dict, Union
-from numbers import Number
+from numbers import Real
 
-from kronecker.core import Index, Equation, Term, CompositeTerm, NumberTerm
+from kronecker.core import Index, Equation, Term, CompositeTerm, RealTerm
 from kronecker.backends.base import Backend
 
 import numpy as np
@@ -20,12 +20,12 @@ def create_index_arrays(indices: Sequence[Index]) -> Dict[Index, np.ndarray]:
 
     
 def realise_term(
-    term: Union[Term, Number],
+    term: Union[Term, Real],
     index_values: Dict[Index, np.ndarray]
-    ) -> Union[np.ndarray, Number]:
-    if isinstance(term, Number):
+    ) -> Union[np.ndarray, Real]:
+    if isinstance(term, Real):
         return term
-    elif isinstance(term, NumberTerm):
+    elif isinstance(term, RealTerm):
         return term.value
     elif isinstance(term, Index):
         return index_values[term]
