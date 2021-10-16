@@ -48,6 +48,21 @@ def test_extract_block():
     np.testing.assert_array_equal(res, expected)
 
 
+def test_nested():
+    expected = np.array([
+        [1, 1, 1, 0, 0],
+        [1, 1, 1, 0, 0],
+        [1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 0]
+    ])
+
+    i, j = kronecker.dims((5, 5))
+    res = (i - 3 * (j - 2) >= 0).toarray()
+
+    np.testing.assert_array_equal(res, expected)
+
+
 def test_operations_1():
     expected = np.array([
         [1, 0, 0, 0, 0],
