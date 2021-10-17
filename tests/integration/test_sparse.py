@@ -40,6 +40,13 @@ def test_ineq_float():
     np.testing.assert_array_equal(res.todense(), expected)
 
 
+def test_sparsity():
+    # would run out of memory if not sparse
+    i, j = kronecker.dims((1000000, 1000000))
+    x = (i * 5 == j).tosparse()
+    assert x.sum() == 200000
+
+
 @pytest.mark.parametrize("rows, cols, eq_str", [
     (100, 100, "i == j"),
     (100, 100, "i * 5 - 6 + j * 2 - 3 * i == 8 * j"),
