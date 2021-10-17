@@ -30,7 +30,7 @@ def realise_term(
     elif isinstance(term, Index):
         return index_values[term]
     elif isinstance(term, CompositeTerm):
-        return term.operator(
+        return term.operator.value(
             realise_term(term.left, index_values),
             realise_term(term.right, index_values))
     raise ValueError(f"Numpy backend can't realise term {term}")
@@ -40,6 +40,6 @@ class NumpyBackend(Backend):
     @staticmethod
     def realise(eq: Equation) -> np.ndarray:
         index_values = create_index_arrays(eq.indices)
-        return eq.operator(
+        return eq.operator.value(
             realise_term(eq.left, index_values),
             realise_term(eq.right, index_values))

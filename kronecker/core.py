@@ -2,8 +2,9 @@ from __future__ import annotations
 import abc
 from numbers import Real
 from typing import Sequence, Tuple, Dict, Any, Union, Optional, List
+import operator as op
 
-import numpy as np
+from kronecker.primitives import ComparisonOperator, BinaryOperator
 
 
 class Term(abc.ABC):
@@ -14,7 +15,7 @@ class Term(abc.ABC):
     def shape(self) -> Tuple[int, ...]:
         return tuple(i.n for i in self.indices)
 
-    def __comparison_op(self, other: Any, operator: np.ufunc) -> Equation:
+    def __comparison_op(self, other: Any, operator: ComparisonOperator) -> Equation:
         if isinstance(other, Term):
             return Equation(self, other, operator)
         elif isinstance(other, Real):
@@ -25,24 +26,24 @@ class Term(abc.ABC):
     # mypy complains that return type doesn't match that of the superclass (object),
     # which is bool.
     def __eq__(self, other: Any) -> Equation:  # type: ignore
-        return self.__comparison_op(other, np.equal)
+        return self.__comparison_op(other, ComparisonOperator.EQ)
 
-    def __neq__(self, other: Any) -> Equation:
-        return self.__comparison_op(other, np.not_equal)
+    def __ne__(self, other: Any) -> Equation: # type: ignore
+        return self.__comparison_op(other, ComparisonOperator.NE)
 
     def __gt__(self, other: Any) -> Equation:
-        return self.__comparison_op(other, np.greater)
+        return self.__comparison_op(other, ComparisonOperator.GT)
 
     def __ge__(self, other: Any) -> Equation:
-        return self.__comparison_op(other, np.greater_equal)
+        return self.__comparison_op(other, ComparisonOperator.GE)
 
     def __lt__(self, other: Any) -> Equation:
-        return self.__comparison_op(other, np.less)
+        return self.__comparison_op(other, ComparisonOperator.LT)
 
     def __le__(self, other: Any) -> Equation:
-        return self.__comparison_op(other, np.less_equal)
+        return self.__comparison_op(other, ComparisonOperator.LE)
 
-    def __binary_op(self, other: Any, operator: np.ufunc) -> CompositeTerm:
+    def __binary_op(self, other: Any, operator: BinaryOperator) -> CompositeTerm:
         if isinstance(other, Real):
             return CompositeTerm(
                 self.indices, self, RealTerm(other, self.indices), operator
@@ -53,39 +54,37 @@ class Term(abc.ABC):
         return NotImplemented
 
     def __add__(self, other: Any) -> CompositeTerm:
-        return self.__binary_op(other, np.add)
+        return self.__binary_op(other, BinaryOperator.ADD)
 
     def __radd__(self, other: Any) -> CompositeTerm:
         return self + other
 
     def __sub__(self, other: Any) -> CompositeTerm:
-        return self.__binary_op(other, np.subtract)
+        return self.__binary_op(other, BinaryOperator.SUB)
 
     def __rsub__(self, other: Any) -> CompositeTerm:
         return self - other
 
     def __mul__(self, other: Any) -> CompositeTerm:
-        return self.__binary_op(other, np.multiply)
+        return self.__binary_op(other, BinaryOperator.MUL)
 
     def __rmul__(self, other: Any) -> CompositeTerm:
         return self * other
 
     def __pow__(self, other: Any) -> CompositeTerm:
-        return self.__binary_op(other, np.power)
+        return self.__binary_op(other, BinaryOperator.POW)
 
     def __floordiv__(self, other: Any) -> CompositeTerm:
-        return self.__binary_op(other, np.floor_divide)
+        return self.__binary_op(other, BinaryOperator.FLOORDIV)
 
     def __rfloordiv__(self, other: Any) -> CompositeTerm:
-        self // other
+        return self // other
 
-    def __truediv__(self, other: Any) -> None:
-        raise NotImplementedError(
-            "True division is not available, use // for integer division."
-        )
+    def __truediv__(self, other: Any) -> CompositeTerm:
+        return self.__binary_op(other, BinaryOperator.TRUEDIV)
 
-    def __rtruediv__(self, other: Any) -> None:
-        self / other
+    def __rtruediv__(self, other: Any) -> CompositeTerm:
+        return self / other
 
 
 class RealTerm(Term):
@@ -110,7 +109,7 @@ class CompositeTerm(Term):
         indices: Sequence[Index],
         left: Union[Real, Term],
         right: Union[Real, Term],
-        operator: np.ufunc,
+        operator: BinaryOperator,
     ):
         super().__init__(indices)
         self.left = left
@@ -119,7 +118,7 @@ class CompositeTerm(Term):
 
 
 class Equation:
-    def __init__(self, left: Term, right: Term, operator: np.ufunc):
+    def __init__(self, left: Term, right: Term, operator: ComparisonOperator):
         if left.shape != right.shape:
             raise ValueError(f"Shape mismatch: {left.shape}, {right.shape}")
         elif left.indices != right.indices:
