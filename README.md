@@ -37,4 +37,5 @@ assert x.sum() == 200000
 
 ## Limitations
 * When creating sparse matrices linear expressions in the indices are simplified and evaluated once per row, giving a complexity of O(n_rows * n_True_per_row). For non-linear expressions (including ones that contain integer division `//`) a slower, O(n_rows * n_cols), path is used. This is mostly useless, creating a numpy array and converting is much faster (but uses more memory).
+* Only the operators {`+`, `-`, `*`, `/`, `//`, `**`} are supported.
 * Multiple comparisons (`i < j < 2 * i`) are not supported.
