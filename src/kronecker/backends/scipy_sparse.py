@@ -195,8 +195,11 @@ def get_non_linear_build_fun(eq: Equation, row_index: Index, col_index: Index) -
 
     Returns
     -------
-        Function mapping from row index to row of the matrix.
+        Function mapping from row index to tuple of (list of non-zero indices, list of values).
     """
+    # we don't want to have a bunch of nested function calls for each entry,
+    # so flatten it out by creating an AST for the whole expression
+    # and then compiling it into a single lambda
     ast_left = term_to_ast(eq.left, row_index, col_index)
     ast_right = term_to_ast(eq.right, row_index, col_index)
     ast_bool_fun = ast.fix_missing_locations(ast.Expression(
@@ -219,6 +222,47 @@ def get_non_linear_build_fun(eq: Equation, row_index: Index, col_index: Index) -
     return build_fun
 
 
+def get_build_fun(eq: Equation) -> RowBuildFun:
+    """Get a function to create each row of the (rows, cols) matrix described by the equation eq
+    when given row ∈ [0, rows). Uses fast approach for linear equations and slower one
+    for non-linear ones.
+
+    Parameters
+    ----------
+    eq
+
+    Returns
+    -------
+        Function mapping from row index to (list of non-zero indices, list of values).
+    """
+    row_index, col_index = eq.indices
+    rows, cols = eq.shape
+
+    try:
+        left = get_linear_coefficients(eq.left)
+        right = get_linear_coefficients(eq.right)
+    except NonLinearError:
+        warnings.warn(
+            "Using slow path, this could take a long time for big matrices!"
+            "Using Equation.to_numpy() and converting to sparse matrix will almost always be faster.",
+            RuntimeWarning)
+        build_fun = get_non_linear_build_fun(eq, row_index, col_index)
+    else:
+        # we have a linear equation, put it into the form
+        # col = a * row + b
+        col_mult = left[col_index] - right[col_index]
+        if col_mult > 0:
+            operator = eq.operator
+        else:
+            # flip the comparison operator if we divide by a negative value
+            operator = INVERSE_OPERATOR[eq.operator]
+        a = (right[row_index] - left[row_index]) / col_mult
+        b = (right[None] - left[None]) / col_mult
+
+        build_fun = get_linear_build_fun(operator=operator, a=a, b=b, cols=cols)
+    return build_fun
+
+
 class ScipySparseBackend(Backend):
     @staticmethod
     def realise(eq: Equation) -> sparse.csr_matrix:
@@ -238,35 +282,14 @@ class ScipySparseBackend(Backend):
         """
         if len(eq.shape) != 2:
             raise ValueError("Scipy.sparse only supports 2 dimensional matrices!")
-        row_index, col_index = eq.indices
+
         rows, cols = eq.shape
 
-        try:
-            left = get_linear_coefficients(eq.left)
-            right = get_linear_coefficients(eq.right)
-        except NonLinearError:
-            warnings.warn(
-                "Using slow path, this could take a long time for big matrices!"
-                "Using Equation.to_numpy() and converting to sparse matrix will almost always be faster.",
-                RuntimeWarning)
-            build_fun = get_non_linear_build_fun(eq, row_index, col_index)
-        else:
-            # we have a linear equation, put it into the form
-            # col = a * row + b
-            col_mult = left[col_index] - right[col_index]
-            if col_mult > 0:
-                operator = eq.operator
-            else:
-                # flip the comparison operator if we divide by a negative value
-                operator = INVERSE_OPERATOR[eq.operator]
-            a = (right[row_index] - left[row_index]) / col_mult
-            b = (right[None] - left[None]) / col_mult
-
-            build_fun = get_linear_build_fun(operator=operator, a=a, b=b, cols=cols)
+        row_build_fun = get_build_fun(eq)
 
         lilmatrix = sparse.lil_matrix((rows, cols), dtype=bool)
         for i in range(rows):
-            row_indices, row_data = build_fun(i)
+            row_indices, row_data = row_build_fun(i)
             lilmatrix.rows[i] = row_indices
             lilmatrix.data[i] = row_data
 
