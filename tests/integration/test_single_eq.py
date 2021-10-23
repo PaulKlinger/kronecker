@@ -63,7 +63,7 @@ def test_nested():
     np.testing.assert_array_equal(res, expected)
 
 
-def test_operations_1():
+def test_operations():
     expected = np.array([
         [1, 0, 0, 0, 0],
         [1, 0, 0, 0, 0],
@@ -74,8 +74,7 @@ def test_operations_1():
 
     i, j = kronecker.indices(5, 5)
     res1 = (i * 4 // 5  - j >= 0).to_numpy()
-    res2 = (0 <= i * 4 // 5  - j).to_numpy()
-
+    res2 = (0 <= i * 4 // 5 + (-j)).to_numpy()
     np.testing.assert_array_equal(res1, expected)
     np.testing.assert_array_equal(res2, expected)
 

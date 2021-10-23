@@ -86,6 +86,9 @@ class Term(abc.ABC):
     def __rtruediv__(self, other: Any) -> CompositeTerm:
         return self / other
 
+    def __neg__(self) -> CompositeTerm:
+        return -1 * self
+
 
 class RealTerm(Term):
     def __init__(self, value: Real, indices: Sequence[Index]):
