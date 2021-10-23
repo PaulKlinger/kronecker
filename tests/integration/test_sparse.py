@@ -62,3 +62,16 @@ def test_sparse_against_numpy(rows, cols, eq_str):
     res_numpy = eq.toarray()
     res_sparse = eq.tosparse().todense()
     np.testing.assert_array_equal(res_sparse, res_numpy)
+
+
+@pytest.mark.parametrize("rows, cols, eq_str", [
+    (100, 100, "i == j ** 2"),
+    (100, 100, "i // 3 + j * i == 8 * j"),
+    (100, 100, "j / 5 > i / (j + 1)")
+])
+def test_sparse_slow_path_against_numpy(rows, cols, eq_str):
+    i, j = kronecker.dims((rows, cols))
+    eq = eval(eq_str)
+    res_numpy = eq.toarray()
+    res_sparse = eq.tosparse().todense()
+    np.testing.assert_array_equal(res_sparse, res_numpy)
