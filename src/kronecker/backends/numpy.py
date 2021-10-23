@@ -20,12 +20,10 @@ def create_index_arrays(indices: Sequence[Index]) -> Dict[Index, np.ndarray]:
 
     
 def realise_term(
-    term: Union[Term, Real],
+    term: Term,
     index_values: Dict[Index, np.ndarray]
     ) -> Union[np.ndarray, Real]:
-    if isinstance(term, Real):
-        return term
-    elif isinstance(term, RealTerm):
+    if isinstance(term, RealTerm):
         return term.value
     elif isinstance(term, Index):
         return index_values[term]

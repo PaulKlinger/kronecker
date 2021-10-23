@@ -50,7 +50,7 @@ AST_BINARY_OP = {
 
 
 def get_linear_coefficients(
-    term: Union[Term, Real]
+    term: Term
     ) -> LinearIndexExpression:
     """Get the linear coefficients of the given expression (if it is a linear expression in the indices).
     Raises non_linear_error if the expression is not linear.
@@ -65,9 +65,7 @@ def get_linear_coefficients(
         Mapping from index to coefficient, None represents constant term.
     """
 
-    if isinstance(term, Real):
-        return cast(LinearIndexExpression, defaultdict(int, {None: term}))
-    elif isinstance(term, RealTerm):
+    if isinstance(term, RealTerm):
         return cast(LinearIndexExpression, defaultdict(int, {None: term.value}))
     elif isinstance(term, Index):
         return cast(LinearIndexExpression, defaultdict(int, {term: 1, None: 0}))
@@ -148,7 +146,7 @@ def get_linear_build_fun(
         raise NotImplementedError(f"Operator {operator} is not supported!")
 
 
-def term_to_ast(term: Union[Term, Real], row_index: Index, col_index: Index) -> ast.expr:
+def term_to_ast(term: Term, row_index: Index, col_index: Index) -> ast.expr:
     """Convert the given term to an ast expression
 
     Parameters
@@ -164,8 +162,6 @@ def term_to_ast(term: Union[Term, Real], row_index: Index, col_index: Index) -> 
         Ast version of term, with row_index replaced by "row" variable
         and col_index replaced by "col" variable.
     """
-    if isinstance(term, Real):
-        return ast.Constant(term)
     if isinstance(term, RealTerm):
         return ast.Constant(term.value)
     elif isinstance(term, Index):
