@@ -63,7 +63,7 @@ class Term(abc.ABC):
         return self.__binary_op(other, BinaryOperator.SUB)
 
     def __rsub__(self, other: Any) -> CompositeTerm:
-        return self - other
+        return other + (-self)
 
     def __mul__(self, other: Any) -> CompositeTerm:
         return self.__binary_op(other, BinaryOperator.MUL)
@@ -110,8 +110,8 @@ class CompositeTerm(Term):
     def __init__(
         self,
         indices: Sequence[Index],
-        left: Union[Real, Term],
-        right: Union[Real, Term],
+        left: Term,
+        right: Term,
         operator: BinaryOperator,
     ):
         super().__init__(indices)
