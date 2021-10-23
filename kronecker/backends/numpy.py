@@ -39,6 +39,17 @@ def realise_term(
 class NumpyBackend(Backend):
     @staticmethod
     def realise(eq: Equation) -> np.ndarray:
+        """Create the matrix represented by eq as a numpy matrix.
+
+        Parameters
+        ----------
+        eq
+            equation to realise
+
+        Returns
+        -------
+            boolean numpy array
+        """
         index_values = create_index_arrays(eq.indices)
         return eq.operator.value(
             realise_term(eq.left, index_values),
