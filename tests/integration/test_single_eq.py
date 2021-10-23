@@ -94,3 +94,18 @@ def test_pow():
         print(r)
 
     np.testing.assert_array_equal(res, expected)
+
+
+def test_rsub():
+    expected = np.array([
+        [0, 0, 1, 0],
+        [0, 1, 0, 0],
+        [1, 0, 0, 0],
+        [0, 0, 0, 0]
+    ]).astype(bool)
+
+    i, j = kronecker.indices(4, 4)
+
+    res = (2 - i == j).to_numpy()
+
+    np.testing.assert_array_equal(res, expected)
