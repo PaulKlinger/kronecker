@@ -123,7 +123,7 @@ class Equation:
             raise ValueError(f"Shape mismatch: {left.shape}, {right.shape}")
         elif left.indices != right.indices:
             raise ValueError(
-                f"Identity mismatch, all indices must be created in the same kronecker.dims call!"
+                f"Identity mismatch, all indices must be created in the same kronecker.indices call!"
             )
 
         self.indices = left.indices
