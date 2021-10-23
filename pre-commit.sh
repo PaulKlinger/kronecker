@@ -1,4 +1,3 @@
 #!/bin/bash
 
-python -m pytest tests
-python -m mypy .
+python -m pytest tests && python -m mypy .
